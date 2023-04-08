@@ -699,7 +699,7 @@ export class UnitOfWork {
 
     if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
       if (type === Cascade.MERGE && collection.isInitialized()) {
-        collection.populated();
+        // collection.populated();
       }
 
       collection

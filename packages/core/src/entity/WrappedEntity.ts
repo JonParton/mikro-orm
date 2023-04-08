@@ -20,7 +20,6 @@ export class WrappedEntity<Entity extends object> {
   __initialized = true;
   __touched = false;
   __populated?: boolean;
-  __lazyInitialized?: boolean;
   __managed?: boolean;
   __onLoadFired?: boolean;
   __schema?: string;
@@ -56,9 +55,8 @@ export class WrappedEntity<Entity extends object> {
     return this.__touched;
   }
 
-  populated(populated = true): void {
+  populated(populated: boolean | undefined = true): void {
     this.__populated = populated;
-    this.__lazyInitialized = false;
   }
 
   toReference(): Ref<Entity> & LoadedReference<Loaded<Entity, AddEager<Entity>>> {
@@ -93,8 +91,6 @@ export class WrappedEntity<Entity extends object> {
     }
 
     await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
-    this.populated(populated);
-    this.__lazyInitialized = true;
 
     return this.entity;
   }

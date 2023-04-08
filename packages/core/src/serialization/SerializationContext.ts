@@ -16,6 +16,9 @@ export class SerializationContext<T> {
 
   constructor(private readonly populate: PopulateOptions<T>[] = []) {}
 
+  /**
+   * Returns true when there is a cycle detected.
+   */
   visit(entityName: string, prop: string): boolean {
     if (!this.path.find(([cls, item]) => entityName === cls && prop === item)) {
       this.path.push([entityName, prop]);
@@ -23,7 +26,7 @@ export class SerializationContext<T> {
     }
 
     // check if the path is explicitly populated
-    if (!this.isMarkedAsPopulated(prop)) {
+    if (!this.isMarkedAsPopulated(entityName, prop)) {
       return true;
     }
 
@@ -69,7 +72,7 @@ export class SerializationContext<T> {
       .forEach(item => this.propagate(root, item, isVisible));
   }
 
-  private isMarkedAsPopulated(prop: string): boolean {
+  isMarkedAsPopulated(entityName: string, prop: string): boolean {
     let populate: PopulateOptions<T>[] | undefined = this.populate;
 
     for (const segment of this.path) {
@@ -80,6 +83,11 @@ export class SerializationContext<T> {
       const exists = populate.find(p => p.field === segment[1]) as PopulateOptions<T>;
 
       if (exists) {
+        // we need to check for cycles here too, as we could fall into endless loops for bidirectional relations
+        if (exists.all) {
+          return !this.path.find(([cls, item]) => entityName === cls && prop === item);
+        }
+
         populate = exists.children as PopulateOptions<T>[];
       }
     }

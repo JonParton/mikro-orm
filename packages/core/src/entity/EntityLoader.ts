@@ -193,17 +193,6 @@ export class EntityLoader {
       return [];
     }
 
-    // set populate flag
-    entities.forEach(entity => {
-      const value = entity[field];
-
-      if (Utils.isEntity(value, true)) {
-        (value as AnyEntity).__helper!.populated();
-      } else if (Utils.isCollection(value)) {
-        (value as Collection<any>).populated();
-      }
-    });
-
     const filtered = this.filterCollections<T>(entities, field, options.refresh);
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))

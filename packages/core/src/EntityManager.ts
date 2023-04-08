@@ -296,14 +296,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Fields extends string = '*',
   >(entityName: string, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint, Fields> | FindOneOptions<Entity, Hint, Fields>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
     where = QueryHelper.processWhere({
-      where: where as FilterQuery<Entity>,
+      where,
       entityName,
       metadata: this.metadata,
       platform: this.driver.getPlatform(),
       convertCustomTypes: options.convertCustomTypes,
       aliased: type === 'read',
     });
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
+    where = (await this.applyFilters(entityName, where, options.filters ?? {}, type))!;
     where = await this.applyDiscriminatorCondition(entityName, where);
 
     return where;
@@ -334,7 +334,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity>> {
+  async applyFilters<Entity extends object>(entityName: string, where: FilterQuery<Entity> | undefined, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<Entity> | undefined> {
     const meta = this.metadata.find<Entity>(entityName);
     const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
